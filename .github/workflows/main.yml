@@ -48,7 +48,7 @@ jobs:
       - name: Prepare Publish Directory
         run: |
           mkdir -p publish
-          cp ./community-generator/publish/geosite.dat ./publish/geosite.dat
+          cp ./community-generator/publish/dlc.dat ./publish/geosite.dat
           
           cd publish
           sha256sum geosite.dat > geosite.dat.sha256sum
