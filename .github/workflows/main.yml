@@ -36,16 +36,6 @@ jobs:
         with:
           go-version: '1.22'
 
-      - name: Fetch external source lists (Antifilter & RU services)
-        run: |
-          mkdir -p data
-         
-          curl -sSL https://antifilter.download/list/domains.lst | sed 's/^/domain:/' > ./data/blocked-ru
-          
-          curl -sSL https://raw.githubusercontent.com/GrimbirdUsers/ru-routing-dat/main/data-geosite/ru-banks > ./data/ru-banks
-          curl -sSL https://raw.githubusercontent.com/GrimbirdUsers/ru-routing-dat/main/data-geosite/wildberries > ./data/ru-wildberries
-          curl -sSL https://raw.githubusercontent.com/GrimbirdUsers/ru-routing-dat/main/data-geosite/ozon > ./data/ru-ozon
-
       - name: Copy local categories to build directory
         run: |
           cp -R ./data/* ./community-generator/data/
@@ -54,13 +44,12 @@ jobs:
         run: |
           cd community-generator
           go run ./ --datapath=./data
-          
+
       - name: Prepare Publish Directory
         run: |
           mkdir -p publish
           cp ./community-generator/publish/geosite.dat ./publish/geosite.dat
           
-          # Генерируем sha256 хэш для проверки целостности клиентами
           cd publish
           sha256sum geosite.dat > geosite.dat.sha256sum
 
