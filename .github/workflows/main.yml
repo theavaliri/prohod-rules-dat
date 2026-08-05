@@ -38,6 +38,7 @@ jobs:
 
       - name: Copy local categories to build directory
         run: |
+          rm -rf ./community-generator/data/*
           cp -R ./data/* ./community-generator/data/
 
       - name: Build geosite.dat
