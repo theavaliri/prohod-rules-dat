@@ -45,6 +45,11 @@ jobs:
           cd community-generator
           go run ./ --datapath=./data
 
+      - name: Verify generated categories
+        run: |
+          echo "=== СПИСОК СОЗДАННЫХ КАТЕГОРИЙ В GEOSITE.DAT ==="
+          ls -1 ./community-generator/data/
+
       - name: Prepare Publish Directory
         run: |
           mkdir -p publish
