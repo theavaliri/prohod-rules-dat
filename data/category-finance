@@ -1,0 +1,50 @@
+# Национальная система платёжных карт
+mironline.ru
+mirconnect.ru
+nspk.ru
+nspk.com
+cbrpay.ru
+
+# Банк России
+cbr.ru
+
+# Альфа-Банк
+alfabank.ru
+netmonet.co
+
+# ВТБ
+vtb.ru
+
+# ПСБ
+psbank.ru
+
+# Газпромбанк
+gazprombank.ru
+
+
+# Т-Банк (частично)
+sso-forms-prod.t-static.ru
+fingerprint.t-static.ru
+mf-platform-production.t-static.ru
+acdn.t-bank-app.ru
+# tbank.ru и его поддомены не в белых списках
+# t-bank-app.ru и его поддомены не в белых списках
+
+# ОТП Банк
+otpbank.ru
+
+# Модульбанк
+modulbank.ru
+
+# ЮMoney (частично)
+full:yoomoney.ru
+static.yoomoney.ru
+
+# Московская биржа
+moex.com
+
+# Банки.ру
+banki.ru
+
+# Кредистория
+credistory.ru

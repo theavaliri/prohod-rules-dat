@@ -1,36 +1,35 @@
-domain:cdn-vk.ru
-domain:mradx.net
-domain:mvk.com
-domain:userapi.com
-domain:vk-analytics.ru
-domain:vk-apps.com
-domain:vk-apps.ru
-domain:vk-cdn.me
-domain:vk-cdn.net
-domain:vkcloud-static.ru
-domain:vk-portal.net
-domain:vk.cc
-domain:vk.com
-domain:vk.company
-domain:vk.design
-domain:vk.link
-domain:vk.me
-domain:vk.ru
-domain:vk.team
-domain:vkcache.com
-domain:vkgo.app
-domain:vklive.app
-domain:vkmessenger.app
-domain:vkmessenger.com
-domain:vkontakte.ru
-domain:vkuser.net
-domain:vkuseraudio.com
-domain:vkuseraudio.net
-domain:vkuseraudio.ru
-domain:vkusercdn.ru
-domain:vkuserlive.net
-domain:vkuserphoto.ru
-domain:vkuservideo.com
-domain:vkuservideo.net
-domain:vkuservideo.ru
-domain:vkvideo.ru
+# Вконтакте
+vk.com
+vk.ru
+vk.me
+vk.cc
+userapi.com
+vkuseraudio.net
+vkuseraudio.ru
+vkuserphoto.ru
+vkvideo.ru
+vk-portal.net
+vkuser.net
+vk-cdn.net
+cdn-vk.ru
+cdn-vk.net
+imgsmail.ru
+
+# RuStore
+rustore.ru
+
+# Дзен
+dzen.ru
+dzeninfra.ru
+
+# Одноклассники
+ok.ru
+okcdn.ru
+mycdn.me
+
+# Max
+max.ru
+oneme.ru
+
+# Mail.ru
+mail.ru
