@@ -1,85 +1,92 @@
-name: Build Custom GeoSite
+name: build
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 3 * * *"
   push:
-    branches:
-      - main
-    paths-ignore:
-      - "**/README.md"
-
-permissions:
-  contents: write
+    branches: [main]
+    paths:
+      - "data/**"
+      - ".github/workflows/main.yml"
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    concurrency:
+      group: build-${{ github.ref }}
+      cancel-in-progress: true
     steps:
-      - name: Set Release Variables
-        run: |
-          echo "RELEASE_NAME=Build $(date +%Y.%m.%d-%H%M)" >> $GITHUB_ENV
-          echo "TAG_NAME=$(date +%Y%m%d%H%M)" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
 
-      - name: Checkout local repository
-        uses: actions/checkout@v4
-
-      - name: Checkout v2fly/domain-list-community (Generator)
-        uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          repository: v2fly/domain-list-community
-          path: community-generator
+          go-version: stable
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-
-      - name: Copy local categories to build directory
-        run: |
-          rm -rf ./community-generator/data/*
-          cp -R ./data/* ./community-generator/data/
+      - name: Install domain-list-community
+        run: go install github.com/v2fly/domain-list-community@latest
 
       - name: Build geosite.dat
         run: |
-          cd community-generator
-          go run ./ --datapath=./data
+          mkdir -p output
+          $(go env GOPATH)/bin/domain-list-community -datapath ./data -outputname geosite.dat -outputdir ./output
 
-      - name: Verify generated categories
+      - name: Sanity check
+        working-directory: output
         run: |
-          echo "=== СПИСОК СОЗДАННЫХ КАТЕГОРИЙ В GEOSITE.DAT ==="
-          ls -1 ./community-generator/data/
+          test -s geosite.dat
+          test "$(stat -c %s geosite.dat)" -ge 5000
 
-      - name: Prepare Publish Directory
+      - name: Checksum
+        working-directory: output
         run: |
-          mkdir -p publish
-          cp ./community-generator/dlc.dat ./publish/geosite.dat
-          
-          cd publish
-          sha256sum geosite.dat > geosite.dat.sha256sum
+          sha256sum geosite.dat | tee geosite.dat.sha256sum
+          sha256sum geosite.dat | cut -d' ' -f1 > geosite.dat.sha256
 
-      - name: Push geosite.dat to "release" branch
-        run: |
-          cd publish
-          git init
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b release
-          git add .
-          git commit -m "${{ env.RELEASE_NAME }}"
-          git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-          git push -f -u origin release
-
-      - name: Create GitHub Release
-        uses: svenstaro/upload-release-action@v2
+      - uses: actions/upload-artifact@v4
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          release_name: ${{ env.RELEASE_NAME }}
-          tag: ${{ env.TAG_NAME }}
-          file_glob: true
-          file: ./publish/*
+          name: geosite
+          path: output/
+          retention-days: 1
+          if-no-files-found: error
 
-      - name: Purge jsDelivr CDN Cache
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: publish
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.run_number }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: geosite
+          path: output
+
+      - name: Create draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.run_number }}
+          name: ${{ github.run_number }}
+          draft: true
+          files: output/*
+
+      - name: Verify assets
         run: |
-          curl -i "https://purge.jsdelivr.net/gh/${{ github.repository }}@release/geosite.dat"
+          set -euo pipefail
+          names=$(gh release view "$TAG" --json assets --jq '.assets[].name')
+          for f in output/*; do
+            base=$(basename "$f")
+            echo "$names" | grep -qx "$base" || { echo "missing asset: $base" >&2; exit 1; }
+          done
+
+      - name: Publish release
+        run: gh release edit "$TAG" --draft=false --latest
+
+      - name: Notify routing
+        env:
+          GH_TOKEN: ${{ secrets.ROUTING_DISPATCH_TOKEN }}
+        run: gh api repos/vahellame/russia-whitelist-routing/dispatches -f event_type=geo-updated
